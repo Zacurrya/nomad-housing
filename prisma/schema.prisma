@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Optional: use a separate shadow database for migrations
+  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+// -- USER TABLE --
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  password String?
+  name String?
+  createdAt DateTime @default(now())
+
+  favouritedListings UserFavourite[]
+
+  @@map("users")
+}
+
+// -- USER FAVOURITE LISTINGS TABLE --
+model UserFavourite {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Foreign keys
+  userId String
+  listingId String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId]) // A user can only favourite a listing once
+  @@map("user_favourites") 
+}
+
+// -- LISTINGS TABLE --
+model Listing {
+  id            String   @id 
+  title         String   // "Modern Downtown Loft"
+  description   String?  
+  source        String   // e.g., "rightmove", "spareroom"
+  originalUrl   String   @unique // The URL you scraped from
+  
+  // Pricing (store in cents to avoid floats)
+  rentalPrice   Int?     // e.g., 320000 (for $3,200)
+  purchasePrice Int?
+  deposit       Int?
+
+  // Core Features
+  beds          Int
+  baths         Int
+  area          Int?     // e.g., 85 (for 85 sq meters)
+  featured      Boolean  @default(false)
+  
+  // One-to-Many: A Listing has one Location
+  locationId    String
+  location      Location @relation(fields: [locationId], references: [id])
+
+  // One-to-Many: A Listing has many Images
+  images        Image[]
+
+  // Many-to-Many: A Listing has many Amenities
+  amenities     Amenity[]
+
+  // Many-to-Many: A Listing can be favourited by many Users
+  favouritedBy  UserFavourite[]
+
+  @@map("listings")
+}
+
+// -- LOCATIONS --
+// Stores the normalized address information.
+// This allows you to easily query "all listings in London".
+model Location {
+  id        String  @id @default(cuid())
+  district  String? // "Shoreditch"
+  city      String  // "London"
+  country   String  // "United Kingdom"
+
+  // A Location can have many listings
+  listings  Listing[]
+
+  // Prevent duplicate locations
+  @@unique([district, city, country])
+  @@map("locations")
+}
+
+// -- LISTING IMAGES --
+// Stores the image URLs for a listing.
+// This is a one-to-many relationship.
+model Image {
+  id        String @id @default(cuid())
+  url       String // "https://photos2.spareroom.co.uk/..."
+  altText   String? // Good for accessibility
+
+  // Relation back to the Listing
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@map("images")
+}
+
+// -- LISTING AMENITIES --
+// Stores the unique amenities.
+// This is a many-to-many relationship.
+model Amenity {
+  id   String @id @default(cuid())
+  name String @unique
+
+  // Relation to all listings that have this amenity
+  // Prisma will automatically create and manage the hidden
+  // "_AmenityToListing" join table for this.
+  listings Listing[]
+
+  @@map("amenities")
+}
+

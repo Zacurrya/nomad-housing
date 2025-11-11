@@ -1,11 +1,9 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
   --font-size: 16px;
   --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
+  --foreground: #0a2540;
   --card: #ffffff;
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -188,4 +186,118 @@
 
 html {
   font-size: var(--font-size);
+}
+
+/*
+  Custom scrollbar styling for scrollable menus (e.g., Region Settings dropdown)
+  - Track matches the dark dropdown background (#0a2540)
+  - Thumb is subtle and rounded; right edge appears rounded due to track radius
+  - Cross-browser: Firefox via scrollbar-color; WebKit via ::-webkit-scrollbar*
+*/
+.custom-scroll {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: #0a2540; /* match dropdown bg */
+  border-radius: 0.5rem; /* helps round the right side visually */
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 9999px; /* fully rounded pill */
+  border: 2px solid #0a2540; /* creates spacing and blends into bg */
+}
+
+.custom-scroll:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes celebration {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--particle-rotation, 0deg)) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--particle-x, 0px)), calc(-50% + var(--particle-y, 0px))) rotate(calc(var(--particle-rotation, 0deg) + 360deg)) scale(0);
+    opacity: 0;
+  }
+}
+
+.emoji-flag {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Range slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  /* vertical pill-shaped (tic-tac) thumb */
+  width: 8px; /* thickness */
+  height: 20px; /* length (vertical) */
+  border-radius: 4px; /* rounded ends */
+  background: #0a2540;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 10;
+  margin-top: -3; /* align top of thumb with track */
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #0d2f54;
+}
+
+/* Firefox */
+input[type="range"]::-moz-range-thumb {
+  /* vertical pill for Firefox */
+  width: 8px;
+  height: 20px;
+  border-radius: 4px;
+  background: #0a2540;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  background: #0d2f54;
+}
+
+/* Remove default track styling */
+input[type="range"]::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: transparent;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: transparent;
+}
+
+/* Allow room so pill thumbs sit fully inside range ends */
+input[type="range"] {
+  --thumb-half: 14px; /* half of 28px */
+  padding-left: var(--thumb-half);
+  padding-right: var(--thumb-half);
 }

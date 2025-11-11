@@ -1,31 +1,53 @@
+"use client";
+import { useState, useEffect } from "react";
 import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
-import { LocationCard } from "../components/ui/LocationCard";
-import Locations from "../lib/Locations";
+import { LocationCard } from "../components/cards/LocationCard";
+
+type Location = {
+  city: string;
+  country: string;
+  image: string;
+  priceFrom: string;
+  listings: number;
+};
 
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-gray-50 pb-28">
-      <Header />
-      <section className="max-w-6xl mx-auto px-6 py-12">
-        <div className="mt-8 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {Locations.map((loc) => (
-            <LocationCard
-              key={loc.city}
-              city={loc.city}
-              country={loc.country}
-              image={loc.image}
-              listings={loc.listings}
-              priceFrom={loc.priceFrom}
-            />
-          ))}
-        </div>
+  const [locations, setLocations] = useState<Location[]>([]);
 
-        <div className="mt-8 flex justify-center">
-          <button className="px-4 py-2 bg-white border rounded">Load more destinations</button>
-        </div>
-      </section>
-      <Footer />
-    </main>
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch('/api/locations');
+        const data = await response.json();
+        setLocations(data);
+      } catch (error) {
+        console.error('Error fetching locations:', error);
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+  return (
+    <>
+      <head><title>Nomad Housing</title></head>
+      <main className="min-h-screen bg-gray-50">
+          <Header />
+        <section className="max-w-6xl mx-auto px-6 py-12">
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {locations.map((loc) => (
+              <LocationCard
+                key={loc.city}
+                city={loc.city}
+                country={loc.country}
+                image={loc.image}
+                listings={loc.listings}
+                priceFrom={`${loc.priceFrom}00`}
+              />
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
