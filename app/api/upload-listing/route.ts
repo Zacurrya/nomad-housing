@@ -11,8 +11,8 @@ export async function POST(request: NextRequest) {
       userId,
       title,
       description,
-      beds,
-      baths,
+      bedrooms,
+      bathrooms,
       area,
       rentalPrice,
       address,
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (!userId || !title || !beds || !baths || !rentalPrice || !city || !country) {
+    if (!userId || !title || !bedrooms || !bathrooms || !rentalPrice || !city || !country) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
         source: 'user-upload',
         originalUrl: `https://nomad-housing.com/listing/${listingId}`,
         rentalPrice: parseInt(rentalPrice),
-        beds: parseInt(beds),
-        baths: parseInt(baths),
+        beds: parseInt(bedrooms),
+        baths: parseInt(bathrooms),
         area: area ? parseInt(area) : null,
         featured: false,
         locationId: location.id,

@@ -80,6 +80,19 @@ model Listing {
   @@map("listings")
 }
 
+// -- CITY TABLE --
+// Stores city information with hero images for the platform
+model City {
+  id        String  @id @default(cuid())
+  name      String  @unique // "London"
+  country   String  // "United Kingdom"
+  imageUrl  String  // Hero image URL from Unsplash or other source
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("cities")
+}
+
 // -- LOCATIONS --
 // Stores the normalized address information.
 // This allows you to easily query "all listings in London".

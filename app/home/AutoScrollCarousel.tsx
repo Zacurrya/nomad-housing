@@ -74,11 +74,11 @@ export default function AutoScrollCarousel({ category, title, subtitle }: AutoSc
   };
 
   return (
-    <section className="py-12 overflow-hidden">
+    <section className="py-8 overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
-          <p className="text-gray-600 mt-2">{subtitle}</p>
+          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+          <p className="text-xl text-gray-600 mt-2">{subtitle}</p>
         </div>
         
         {/* Navigation Arrows */}
