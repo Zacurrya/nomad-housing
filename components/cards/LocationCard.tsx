@@ -34,7 +34,7 @@ export function LocationCard({ image, city, country, priceFrom, listings }: Loca
       </div>
 
       {/* Listings badge */}
-      <div className="absolute top-3 right-3 bg-transparent backdrop-blur-2xl text-white font-medium text-xs px-2.5 py-1 rounded-full border border-white/30 z-10">
+      <div className="listing-count-badge">
         {listings} {listings === 1 ? 'listing' : 'listings'}
       </div>
 

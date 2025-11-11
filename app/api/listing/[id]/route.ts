@@ -4,6 +4,9 @@ import type { Property } from "@/components/cards/PropertyCard";
 
 const prisma = new PrismaClient();
 
+// Enable caching for this route
+export const revalidate = 120; // Revalidate every 2 minutes
+
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> }
@@ -62,7 +65,11 @@ export async function GET(
       isFavourited,
     };
 
-    return NextResponse.json(property);
+    return NextResponse.json(property, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=240',
+      },
+    });
   } catch (err) {
     console.error("Error fetching listing:", err);
     return NextResponse.json(

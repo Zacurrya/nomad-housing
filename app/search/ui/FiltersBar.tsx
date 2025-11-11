@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useCurrency } from "../context/CurrencyContext";
-import { formatPrice } from "../../lib/currency";
+import { useCurrency } from "../../../components/context/CurrencyContext";
+import { formatPrice } from "../../../lib/currency";
 import SortMenu, { SortValue } from "./SortMenu";
 
 export default function FiltersBar({ total, underActive, onToggleUnderAction, onSortChangeAction, onAllAction }: { total: number; underActive: boolean; onToggleUnderAction: () => void; onSortChangeAction?: (v: SortValue) => void; onAllAction?: () => void; }) {

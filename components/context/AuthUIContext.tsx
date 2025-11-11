@@ -12,6 +12,7 @@ interface AuthUIContextValue {
   setAuthenticated: (v: boolean) => void;
   userId: string | null;
   setUserId: (id: string | null) => void;
+  isLoading: boolean;
 }
 
 const AuthUIContext = createContext<AuthUIContextValue | undefined>(undefined);
@@ -21,6 +22,7 @@ export function AuthUIProvider({ children }: { children: React.ReactNode }) {
   const [loginReason, setLoginReason] = useState<LoginReason>("default");
   const [isAuthenticated, setAuthenticated] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const openLogin = useCallback((reason: LoginReason = "default") => {
     setLoginReason(reason);
@@ -38,8 +40,12 @@ export function AuthUIProvider({ children }: { children: React.ReactNode }) {
           setAuthenticated(true);
           setUserId(data.user.id);
         }
+        setIsLoading(false);
       })
-      .catch((err) => console.error("Failed to restore session:", err));
+      .catch((err) => {
+        console.error("Failed to restore session:", err);
+        setIsLoading(false);
+      });
   }, []);
 
   // Close on ESC
@@ -52,8 +58,8 @@ export function AuthUIProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ isLoginOpen, openLogin, closeLogin, loginReason, isAuthenticated, setAuthenticated, userId, setUserId }),
-    [isLoginOpen, openLogin, closeLogin, loginReason, isAuthenticated, userId]
+    () => ({ isLoginOpen, openLogin, closeLogin, loginReason, isAuthenticated, setAuthenticated, userId, setUserId, isLoading }),
+    [isLoginOpen, openLogin, closeLogin, loginReason, isAuthenticated, userId, isLoading]
   );
 
   return <AuthUIContext.Provider value={value}>{children}</AuthUIContext.Provider>;

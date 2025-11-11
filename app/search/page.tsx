@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import Head from "next/head";
 import { useSearchParams } from "next/navigation";
-import FiltersBar from "../../components/search/FiltersBar";
+import FiltersBar from "./ui/FiltersBar";
 import PropertyCard, { type Property } from "../../components/cards/PropertyCard";
 import { useCurrency } from "../../components/context/CurrencyContext";
 import { useAuthUI } from "../../components/context/AuthUIContext";
 import { parseUSD, convertFromUSD } from "../../lib/currency";
 import SearchBar from "../../components/ui/ListingSearchBar";
-import FiltersSidebar, { type SidebarFilters } from "../../components/search/FiltersSidebar";
+import FiltersSidebar, { type SidebarFilters } from "./ui/FiltersSidebar";
 
 export default function SearchPage() { 
   const { currency } = useCurrency();
@@ -101,6 +102,7 @@ export default function SearchPage() {
     }
     return arr;
   }, [underActive, currency, effectiveFilters, properties]);
+ 
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -116,10 +118,10 @@ export default function SearchPage() {
 
   return (
     <>
-    <head>
+      <Head>
         <title>Search for Rentals & Properties Globally | Nomad</title>
-    </head>
-    <main>
+      </Head>
+      <main>
         <SearchBar />
         <FiltersBar
           total={filtered.length}

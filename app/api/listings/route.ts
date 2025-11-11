@@ -4,6 +4,9 @@ import type { Property } from "@/components/cards/PropertyCard";
 
 const prisma = new PrismaClient();
 
+// Enable caching for this route
+export const revalidate = 60; // Revalidate every 60 seconds
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -53,7 +56,11 @@ export async function GET(request: Request) {
       isFavourited: favouritedListingIds.has(l.id),
     }));
 
-    return NextResponse.json(props);
+    return NextResponse.json(props, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+      },
+    });
   } catch (err) {
     console.error("Error fetching listings:", err);
     return NextResponse.json({ error: "Failed to fetch listings" }, { status: 500 });

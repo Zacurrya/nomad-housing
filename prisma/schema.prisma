@@ -19,6 +19,7 @@ model User {
   createdAt DateTime @default(now())
 
   favouritedListings UserFavourite[]
+  listings Listing[] // User's uploaded listings
 
   @@map("users")
 }
@@ -44,7 +45,7 @@ model Listing {
   id            String   @id 
   title         String   // "Modern Downtown Loft"
   description   String?  
-  source        String   // e.g., "rightmove", "spareroom"
+  source        String   // e.g., "rightmove", "spareroom", "user-upload"
   originalUrl   String   @unique // The URL you scraped from
   
   // Pricing (store in cents to avoid floats)
@@ -57,6 +58,7 @@ model Listing {
   baths         Int
   area          Int?     // e.g., 85 (for 85 sq meters)
   featured      Boolean  @default(false)
+  viewCount     Int      @default(0) // Track how many times the listing has been viewed
   
   // One-to-Many: A Listing has one Location
   locationId    String
@@ -70,6 +72,10 @@ model Listing {
 
   // Many-to-Many: A Listing can be favourited by many Users
   favouritedBy  UserFavourite[]
+
+  // Many-to-One: A Listing belongs to a User (optional for scraped listings)
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("listings")
 }

@@ -4,7 +4,7 @@ import HeartBtn from "../user/FavouriteLocationBtn";
 import { useState } from "react";
 import { useCurrency } from "../context/CurrencyContext";
 import { formatPriceFromUSDString } from "../../lib/currency";
-import { Bed, Bath, MapPin, Square } from "lucide-react";
+import { Bed, Bath, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export type Property = {
@@ -42,12 +42,28 @@ export default function PropertyCard({ p, onUnfavouriteAction }: PropertyCardPro
     }
   };
 
+  const trackView = async (listingId: string) => {
+    try {
+      await fetch('/api/listing/view', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ listingId }),
+      });
+    } catch (error) {
+      console.error('Failed to track view:', error);
+    }
+  };
+
   const handleCardClick = () => {
+    trackView(p.id);
     router.push(`/listing/${p.id}`);
   };
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event bubbling to card
+    trackView(p.id);
     router.push(`/listing/${p.id}`);
   };
 
@@ -72,7 +88,12 @@ export default function PropertyCard({ p, onUnfavouriteAction }: PropertyCardPro
         <div className="flex items-center gap-4 text-xs text-gray-600">
           <span className="inline-flex items-center gap-1"><Bed className="size-4.5"/>{p.beds}</span>
           <span className="inline-flex items-center gap-1"><Bath className="size-4.5"/>{p.baths}</span>
-          <span className="inline-flex items-center gap-1"><Square className="size-4.5"/>{p.area} m²</span>
+          <span className="inline-flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-4.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+            </svg>
+            {p.area} m²
+          </span>
         </div>
         <div className="mt-4 flex items-center justify-between">
           <div className="text-sm"><span className="text-gray-500">From</span> <span className="font-semibold">{displayPrice}</span><span className="text-gray-500 text-xs">/month</span></div>
