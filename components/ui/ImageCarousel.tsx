@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import ImageWithFallback from "./ImageWithFallback";
 
 type ImageCarouselProps = {
@@ -9,16 +9,31 @@ type ImageCarouselProps = {
 };
 
 export default function ImageCarousel({ images, alt, className }: ImageCarouselProps) {
-  const imgs = images && images.length > 0 ? images : ["/placeholder.png"];
+  const imgs = useMemo(() => 
+    images && images.length > 0 ? images : ["/placeholder.png"],
+    [images]
+  );
   const [index, setIndex] = useState(0);
 
   const hasMultiple = imgs.length > 1;
 
-  const goPrev = useCallback(() => {
+  // Preload all images when component mounts
+  useEffect(() => {
+    imgs.forEach((src) => {
+      if (src !== "/placeholder.png") {
+        const img = new Image();
+        img.src = src;
+      }
+    });
+  }, [imgs]);
+
+  const goPrev = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation(); // Prevent event bubbling to parent card
     setIndex((i) => (i === 0 ? imgs.length - 1 : i - 1));
   }, [imgs.length]);
 
-  const goNext = useCallback(() => {
+  const goNext = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation(); // Prevent event bubbling to parent card
     setIndex((i) => (i === imgs.length - 1 ? 0 : i + 1));
   }, [imgs.length]);
 

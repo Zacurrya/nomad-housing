@@ -1,15 +1,18 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useAuthUI } from "@/components/context/AuthUIContext";
 import PropertyCard, { type Property } from "@/components/cards/PropertyCard";
-import SearchBar from "@/components/ui/ListingSearchBar";
+import SearchBar from "@/app/(home)/_components/ListingSearchBar";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function FavouritesPage() {
   const { isAuthenticated, openLogin, userId } = useAuthUI();
   const [favourites, setFavourites] = useState<Property[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated || !userId) {
+      setIsLoading(false);
       return;
     }
 
@@ -29,9 +32,11 @@ export default function FavouritesPage() {
             featured: false,
           }));
           setFavourites(favouritedData);
+          setIsLoading(false);
         }
       } catch (e) {
         console.error("Failed to load favourites", e);
+        setIsLoading(false);
       }
     };
 
@@ -46,14 +51,28 @@ export default function FavouritesPage() {
     setFavourites((prev) => prev.filter((item) => item.id !== listingId));
   };
 
+  if (isLoading) {
+    return (
+      <>
+        <main>
+          <Suspense fallback={<div className="h-20 bg-gray-50 animate-pulse" />}>
+            <SearchBar />
+          </Suspense>
+          <section className="max-w-6xl mx-auto px-6 py-16 text-center">
+            <LoadingSpinner message="Loading your favourites..." size="md" />
+          </section>
+        </main>
+      </>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <>
-        <head>
-          <title>My Favourites | Nomad</title>
-        </head>
         <main>
-          <SearchBar />
+          <Suspense fallback={<div className="h-20 bg-gray-50 animate-pulse" />}>
+            <SearchBar />
+          </Suspense>
           <section className="max-w-6xl mx-auto px-6 py-16 text-center">
             <div className="max-w-md mx-auto space-y-4">
               <svg
@@ -89,11 +108,10 @@ export default function FavouritesPage() {
 
   return (
     <>
-      <head>
-        <title>My Favourites | Nomad</title>
-      </head>
       <main>
-        <SearchBar />
+        <Suspense fallback={<div className="h-20 bg-gray-50 animate-pulse" />}>
+          <SearchBar />
+        </Suspense>
         <section className="max-w-6xl mx-auto px-6 py-8">
           <h1 className="text-2xl font-semibold text-gray-900 mb-6">My Favourites</h1>
           {favourites.length === 0 ? (

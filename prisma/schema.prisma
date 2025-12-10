@@ -6,22 +6,80 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // Optional: use a separate shadow database for migrations
-  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 // -- USER TABLE --
 model User {
-  id String @id @default(cuid())
-  email String @unique
-  password String?
-  name String?
-  createdAt DateTime @default(now())
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  emailVerified Boolean?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions      Session[]
+  accounts      Account[]
 
   favouritedListings UserFavourite[]
   listings Listing[] // User's uploaded listings
+  settings UserSettings? // One-to-one relation with user settings
 
   @@map("users")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  token     String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verifications")
+}
+
+// -- USER SETTINGS TABLE --
+model UserSettings {
+  id String @id @default(cuid())
+  userId String @unique
+  receiveEmailNotifications Boolean @default(true)
+  currencyPreference String @default("USD")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
 }
 
 // -- USER FAVOURITE LISTINGS TABLE --
@@ -47,9 +105,10 @@ model Listing {
   description   String?  
   source        String   // e.g., "rightmove", "spareroom", "user-upload"
   originalUrl   String   @unique // The URL you scraped from
+  sold        Boolean  @default(false)
   
-  // Pricing (store in cents to avoid floats)
-  rentalPrice   Int?     // e.g., 320000 (for $3,200)
+  // Pricing (store in dollars)
+  rentalPrice   Int?     // e.g., 3200 (for $3,200)
   purchasePrice Int?
   deposit       Int?
 
@@ -87,8 +146,6 @@ model City {
   name      String  @unique // "London"
   country   String  // "United Kingdom"
   imageUrl  String  // Hero image URL from Unsplash or other source
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@map("cities")
 }

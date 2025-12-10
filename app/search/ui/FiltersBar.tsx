@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCurrency } from "../../../components/context/CurrencyContext";
 import { formatPrice } from "../../../lib/currency";
 import SortMenu, { SortValue } from "./SortMenu";
 
 export default function FiltersBar({ total, underActive, onToggleUnderAction, onSortChangeAction, onAllAction }: { total: number; underActive: boolean; onToggleUnderAction: () => void; onSortChangeAction?: (v: SortValue) => void; onAllAction?: () => void; }) {
   const { currency } = useCurrency();
+  const router = useRouter();
   const thresholdLabel = formatPrice(1000, currency);
   const [sortValue, setSortValue] = useState<SortValue>(null);
 
@@ -25,6 +27,7 @@ export default function FiltersBar({ total, underActive, onToggleUnderAction, on
             onClick={() => {
               setSortValue(null);
               onAllAction?.();
+              router.push('/search');
             }}
           >
             All Properties

@@ -56,10 +56,9 @@ export function formatPriceUSD(amountUSD: number, currency: Currency) {
   return formatPrice(converted, currency);
 }
 
-// Parse a price string like "$3,200" (assumed USD base) into a numeric USD amount
 export function parseUSD(price: string): number {
-  const n = parseInt(price.replace(/[^0-9]/g, ""), 10);
-  return isNaN(n) ? 0 : n;
+  const cleaned = price.replace(/[^0-9.]/g, "");
+  return parseFloat(cleaned);
 }
 
 // Convenience helper for UI: takes a USD price string and returns symbol-first formatted string in target currency

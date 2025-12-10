@@ -91,9 +91,6 @@ export default function ListingPage() {
 
   return (
     <>
-      <head>
-        <title>{listing.title} | Nomad Housing</title>
-      </head>
       <main className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Back Button */}

@@ -3,13 +3,15 @@ import { useState, useEffect } from "react";
 import { useCurrency } from "../../../components/context/CurrencyContext";
 import { convertFromUSD, type Currency } from "../../../lib/currency";
 import * as flags from 'country-flag-icons/react/3x2';
+import { Dumbbell, Waves, Sofa, WashingMachine, Wind } from 'lucide-react';
 
 export interface SidebarFilters {
   priceMin: number; // USD base
   priceMax: number; // USD base
-  minBeds: number;
+  bedrooms: number;
   countries: string[];
   amenities?: string[];
+  showSold?: boolean;
 }
 
 interface FiltersSidebarProps {
@@ -22,21 +24,22 @@ interface FiltersSidebarProps {
 }
 
 export default function FiltersSidebar({ filters, onChangeAction, allCountries, currency, minUSD, maxUSD }: FiltersSidebarProps) {
-  const { priceMin, priceMax, minBeds, countries } = filters;
+  const { priceMin, priceMax, bedrooms, countries } = filters;
   const { currency: ctxCurrency } = useCurrency();
   const displayCurrency = currency || ctxCurrency;
 
   // Local slider state in USD base values - initialize to dataset bounds if unset
   const [localMin, setLocalMin] = useState(() => priceMin || minUSD);
   const [localMax, setLocalMax] = useState(() => priceMax || maxUSD);
-  const [localBeds, setLocalBeds] = useState(minBeds);
+  const [localBedrooms, setLocalBedrooms] = useState(bedrooms);
   const [localCountries, setLocalCountries] = useState<string[]>(countries);
   const [localAmenities, setLocalAmenities] = useState<string[]>(filters.amenities ?? []);
+  const [localShowSold, setLocalShowSold] = useState<boolean>(filters.showSold ?? false);
 
   // Push changes upstream whenever local states change
   useEffect(() => {
-    onChangeAction({ priceMin: localMin, priceMax: localMax, minBeds: localBeds, countries: localCountries, amenities: localAmenities });
-  }, [localMin, localMax, localBeds, localCountries, localAmenities, onChangeAction]);
+    onChangeAction({ priceMin: localMin, priceMax: localMax, bedrooms: localBedrooms, countries: localCountries, amenities: localAmenities, showSold: localShowSold });
+  }, [localMin, localMax, localBedrooms, localCountries, localAmenities, localShowSold, onChangeAction]);
 
   const handleCountryToggle = (c: string) => {
     setLocalCountries((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
@@ -54,7 +57,7 @@ export default function FiltersSidebar({ filters, onChangeAction, allCountries, 
   const step = Math.max(10, Math.round(denom / 200));
 
   return (
-  <aside className="w-60 shrink-0 border-r bg-white/70 backdrop-blur-sm pr-4 py-6 rounded-lg h-full">
+  <aside className="w-60 shrink-0 border-r bg-white/70 backdrop-blur-sm pr-4 py-6 rounded-lg sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto">
       <h2 className="text-sm font-semibold mb-4">Filters</h2>
 
       {/* Price Range */}
@@ -105,12 +108,12 @@ export default function FiltersSidebar({ filters, onChangeAction, allCountries, 
 
       {/* Bedrooms */}
       <div className="mb-6">
-        <p className="text-xs font-medium mb-2">Minimum Bedrooms</p>
+        <p className="text-xs font-medium mb-2">Number of Bedrooms</p>
         <input
           type="number"
           min={0}
-          value={localBeds}
-          onChange={(e) => setLocalBeds(Number(e.target.value) || 0)}
+          value={localBedrooms}
+          onChange={(e) => setLocalBedrooms(Number(e.target.value) || 0)}
           className="w-full rounded-md border px-2 py-1 text-xs"
         />
       </div>
@@ -138,34 +141,48 @@ export default function FiltersSidebar({ filters, onChangeAction, allCountries, 
       </div>
 
       {/* Amenities */}
-      <div>
+      <div className="mb-4">
         <p className="text-xs font-medium mb-2">Amenities</p>
         <div className="space-y-1">
-          {DEFAULT_AMENITIES.map((a) => {
-            const active = localAmenities.includes(a);
+          {DEFAULT_AMENITIES.map((amenity) => {
+            const active = localAmenities.includes(amenity.name);
+            const Icon = amenity.icon;
             return (
               <button
-                key={a}
+                key={amenity.name}
                 type="button"
-                onClick={() => handleAmenityToggle(a)}
-                className={`w-full text-left text-xs px-2 py-1 rounded-md border ${active ? "bg-[#0a2540] text-white border-[#0a2540]" : "bg-white hover:bg-gray-50"}`}
+                onClick={() => handleAmenityToggle(amenity.name)}
+                className={`w-full text-left text-xs px-2 py-1 rounded-md border flex items-center gap-2 ${active ? "bg-[#0a2540] text-white border-[#0a2540]" : "bg-white hover:bg-gray-50"}`}
               >
-                {a}
+                <Icon className="size-3.5 shrink-0" />
+                <span>{amenity.name}</span>
               </button>
             );
           })}
         </div>
+      </div>
+
+      {/* Show Sold */}
+      <div>
+        <p className="text-xs font-medium mb-2">Listing Status</p>
+        <button
+          type="button"
+          onClick={() => setLocalShowSold(!localShowSold)}
+          className={`w-full text-left text-xs px-2 py-1 rounded-md border ${localShowSold ? "bg-[#0a2540] text-white border-[#0a2540]" : "bg-white hover:bg-gray-50"}`}
+        >
+          Show Sold Listings
+        </button>
       </div>
     </aside>
   );
 }
 
 const DEFAULT_AMENITIES = [
-  "Shared gym",
-  "Shared pool",
-  "Furnished",
-  "Washer/Dryer",
-  "Air conditioning",
+  { name: "Shared gym", icon: Dumbbell },
+  { name: "Shared pool", icon: Waves },
+  { name: "Furnished", icon: Sofa },
+  { name: "Washer/Dryer", icon: WashingMachine },
+  { name: "Air conditioning", icon: Wind },
 ] as const;
 
 function getCountryFlag(country: string) {

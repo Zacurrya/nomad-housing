@@ -11,12 +11,14 @@ export type Property = {
   id: string;
   title: string;
   description?: string;
+  address?: string;
   area: number; // m²
   beds: number;
   baths: number;
   price: string; // e.g. "$3,200"
   images: string[]; // primary image at index 0
   featured?: boolean;
+  sold?: boolean; // Track if this property has been sold
   district?: string;
   city: string;
   country: string;
@@ -71,11 +73,18 @@ export default function PropertyCard({ p, onUnfavouriteAction }: PropertyCardPro
   return (
     <div 
       onClick={handleCardClick}
-      className={`group relative overflow-hidden rounded-xl bg-white cursor-pointer transition-transform hover:scale-[1.02] ${p.featured ? 'border-2 border-blue-500/60 shadow-[0_0_25px_rgba(59,130,246,0.35)]' : 'border'}`}
+      className={`group relative overflow-hidden rounded-xl bg-white cursor-pointer transition-transform hover:scale-[1.02] ${p.featured ? 'border-2 border-blue-500/60 shadow-[0_0_25px_rgba(59,130,246,0.35)]' : 'border'} ${p.sold ? 'opacity-75' : ''}`}
     >
   <div className="relative">
         <ImageCarousel images={p.images} alt={p.title} />
-        {p.featured && (
+        {p.sold && (
+          <div className="absolute inset-0 overflow-hidden z-20 pointer-events-none">
+            <div className="absolute top-[50%] left-[-20%] w-[140%] bg-red-600 text-white text-2xl font-bold py-3 text-center shadow-2xl transform -translate-y-1/2 rotate-[-35deg]">
+              SOLD
+            </div>
+          </div>
+        )}
+        {p.featured && !p.sold && (
           <div className="absolute left-3 top-3 text-xs px-3 py-1 rounded-md bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-lg">Featured</div>
         )}
   <HeartBtn isFavorite={fav} setIsFavoriteAction={handleFavouriteChange} listingId={p.id} />

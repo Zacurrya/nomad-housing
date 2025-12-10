@@ -1,62 +1,48 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@/lib/generated/prisma";
 import type { Property } from "@/components/cards/PropertyCard";
+import { getListings } from "@/lib/db/queries";
+import { parseUSD } from "@/lib/currency";
 
-const prisma = new PrismaClient();
-
-// Enable caching for this route
-export const revalidate = 60; // Revalidate every 60 seconds
+// Force dynamic rendering as we depend on request.url
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const city = searchParams.get('city');
+    // Accept both `city` (single-value repeated) and `cities` (array) query keys
+    const cities = [...searchParams.getAll('city'), ...searchParams.getAll('cities')].filter(Boolean);
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    // Accept either `minBeds` (legacy) or `bedrooms` (new) query param
+    const minBeds = searchParams.get('minBeds') ?? searchParams.get('bedrooms');
+    const amenities = searchParams.getAll('amenities');
     const userId = searchParams.get('userId');
 
-    const listings = await prisma.listing.findMany({
-      where: city ? {
-        location: {
-          city: {
-            equals: city,
-            mode: 'insensitive'
-          }
-        }
-      } : undefined,
-      include: {
-        location: true,
-        images: { select: { url: true } },
-        amenities: { select: { name: true } },
-      },
+    const listings = await getListings({
+      cities: cities.length ? cities : [],
+      bedrooms: minBeds ? parseInt(minBeds, 10) : undefined,
+      limit: 1000,
+      userId: userId ?? undefined,
     });
 
-    // Get all favorited listings for this user (if authenticated)
-    let favouritedListingIds = new Set<string>();
-    if (userId) {
-      const favourites = await prisma.userFavourite.findMany({
-        where: { userId },
-        select: { listingId: true },
+    // Post-filter by price and amenities (getListings currently doesn't support price/amenity filtering)
+    let results: Property[] = listings;
+    if (minPrice) {
+      const min = parseFloat(minPrice);
+      results = results.filter((p) => parseUSD(p.price) >= min);
+    }
+    if (maxPrice) {
+      const max = parseFloat(maxPrice);
+      results = results.filter((p) => parseUSD(p.price) <= max);
+    }
+    if (amenities.length > 0) {
+      results = results.filter((p) => {
+        const set = new Set(p.amenities ?? []);
+        return amenities.every((a) => set.has(a));
       });
-      favouritedListingIds = new Set(favourites.map(f => f.listingId));
     }
 
-    const props: Property[] = listings.map((l) => ({
-      id: l.id,
-      title: l.title,
-      description: l.description ?? undefined,
-      area: l.area ?? 0,
-      beds: l.beds,
-      baths: l.baths,
-      price: `$${(l.rentalPrice ?? 0).toLocaleString("en-US")}`,
-      images: l.images.map((i) => i.url),
-      featured: l.featured ?? false,
-      district: l.location?.district ?? undefined,
-      city: l.location?.city ?? "",
-      country: l.location?.country ?? "",
-      amenities: l.amenities.map((a) => a.name),
-      isFavourited: favouritedListingIds.has(l.id),
-    }));
-
-    return NextResponse.json(props, {
+    return NextResponse.json(results, {
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
       },

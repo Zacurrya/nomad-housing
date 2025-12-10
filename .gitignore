@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+__pycache__/
+.venv/
+NEXT-STEPS.txt
