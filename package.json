@@ -22,7 +22,7 @@
     "fastapi": "^0.0.8",
     "jose": "^6.1.1",
     "lucide-react": "^0.553.0",
-    "next": "16.0.1",
+    "next": "16.0.10",
     "ollama": "^0.6.3",
     "prisma": "^6.19.0",
     "pydantic": "^0.0.1-security",
